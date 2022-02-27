@@ -6,6 +6,7 @@ void main(int argc, char **argv){
     }
     //sample 
     // bruh
+    // this is a change for dana branch
 
     //Bash mode - arg[1] is the name of a file
     //1. check if file is valid, output error if not
