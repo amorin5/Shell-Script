@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include<sys/wait.h>
+
 //#include "linkedList.c"
 
 //TO-DOs
@@ -32,30 +33,16 @@ int newProcess(char *myargs[]){
     return 0;
 }
 
-// int batchMode(file fp){
-//     while(fgets(out, 512, fp) != NULL){
-//         char buffer[512];
-//         char *str = fgets(buffer, 512, fp);
-//         write(1, str, sizeof(str)); 
-//                //check if command exists
-//         int rc = fork();
-//          if(rc == 0){ //child function
-//                    //execv(command from file)
-//           }
-
-//        wait();
-//      }
-// }
-
-// int interactiveMode(char *argv[]){
-//     while(1){
-//         char prompt[6] = "mysh> ";
-//         write(1, prompt, strlen(prompt));
-//         char buffer[512];
-//         char* input = fgets(buffer, 512, stdin);
-
-//     }
-// }
+int checkWhiteSpace(char* buffer){
+    int whitespace = 0;
+    for(int i = 0;i < strlen(buffer); i++){
+        if(isspace(buffer[i]) == 0){
+            whitespace = 1;
+            break;
+        }
+    }        
+    return whitespace;
+}     
 
 int main(int argc, char *argv[]){
     FILE *fp;
@@ -73,19 +60,10 @@ int main(int argc, char *argv[]){
     char *myargs[sizeof(buffer)];
     char *token;
     while(fgets(buffer, 512, fp)){
-        //case one -- check if blank line in file/stdin - causing segfault rn
-        // int whitespace = 0;
-        // for(int i = 0; i < strlen(buffer); i++){
-        //     if(isspace(buffer[0] == 0)){
-        //         whitespace = 1;
-        //         break;
-        //     }
-        // }
-        // if(whitespace == 0){
-        //     continue;
-        // }
-        //char *myargs[sizeof(buffer)];
-        //myargs[0] = "";
+        if(checkWhiteSpace(buffer) == 0) {
+             //Checks if the buffer is only space.
+            continue;
+        }
         //seperating the line into the args
         if(strstr(buffer, ">") != NULL){
             // token = strtok(buffer, " >");
