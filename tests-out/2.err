@@ -1,0 +1,2 @@
+timeout: the monitored command dumped core
+./tester/run-tests.sh: line 26: 149545 Segmentation fault      timeout 5 ./mysh this_file_does_not_exist

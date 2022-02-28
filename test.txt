@@ -1,1 +1,3 @@
-/bin/ls p2A/>args argument3 test
+/bin/echo hello
+/bin/cat test.txt
+/bin/echo test
