@@ -34,6 +34,6 @@ echo
 echo "*** Testing output for $utility"
 ./tester/run-tests.sh -c
 
-# echo
-# echo "*** Valgrind output for $utility"
-# valgrind --show-reachable=yes ./$utility tests/19.in > /dev/null
+ echo
+ echo "*** Valgrind output for $utility"
+ valgrind --show-reachable=yes ./$utility tests/19.in > /dev/null
