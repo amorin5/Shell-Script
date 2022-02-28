@@ -4,7 +4,6 @@
 #include <string.h>
 #include <ctype.h>
 #include<sys/wait.h>
-
 //#include "linkedList.c"
 
 //TO-DOs
@@ -12,6 +11,7 @@
 //2. linked list for alias method (struct)
 //3. redirection method
 //4. unalias
+//5. write the errors
 
 void printPrompt(){
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));                
@@ -35,7 +35,7 @@ int newProcess(char *myargs[]){
 
 int checkWhiteSpace(char* buffer){
     int whitespace = 0;
-    for(int i = 0;i < strlen(buffer); i++){
+    for(int i = 0; i < strlen(buffer); i++){
         if(isspace(buffer[i]) == 0){
             whitespace = 1;
             break;
@@ -45,9 +45,12 @@ int checkWhiteSpace(char* buffer){
 }     
 
 int main(int argc, char *argv[]){
+    //printf("%d", argc);
     FILE *fp;
+    int flag = 0;
     if(argc == 2){
         fp = fopen(argv[1], "r");
+        flag = 1;
        if(fp == NULL){
            //char errorname[] = "Error: Cannot open file .\n";
           // write(2, errorname, 20);
@@ -60,24 +63,26 @@ int main(int argc, char *argv[]){
     char *myargs[sizeof(buffer)];
     char *token;
     while(fgets(buffer, 512, fp)){
-        if(checkWhiteSpace(buffer) == 0) {
-             //Checks if the buffer is only space.
+        if(flag == 1){
+            write(1, buffer, strlen(buffer));
+        }
+        if (checkWhiteSpace(buffer) == 0) {
+            if (flag == 0) {
+                printPrompt();
+            }   
             continue;
         }
-        //seperating the line into the args
-        if(strstr(buffer, ">") != NULL){
-            // token = strtok(buffer, " >");
-            // myargs[0] = token;
-            // int i = 1;
-            // while(token != NULL){
-            //     token = strtok(NULL, " ");
-            //     myargs[i] = token;
-            //     i++;
-            // }
-            // MODIFIES MYARGS
-            //space deliminating based on > and whitespace
-            
-            //redirection method
+        //seperating the line into the args -- redirection
+        if(strchr(buffer, '>')){
+            token = strtok(buffer, " >");
+            myargs[0] = token;
+            int i = 1;
+            while(token != NULL){
+                token = strtok(NULL, " \n");
+                myargs[i] = token;
+                i++;
+            }
+            //redirection method -- better to do here or easier to do in new call?
         } else if(strstr(buffer, "alias") != NULL){
             //struct node *linkedList = (struct node*) malloc(sizeof(struct node));
 
@@ -90,8 +95,7 @@ int main(int argc, char *argv[]){
             //check if arg[0] is in the linked list of alias
 
             //base case -- break the line into array of arguments
-            token = strtok(buffer, " ");
-            // char *myargs[sizeof(buffer)];
+            token = strtok(buffer, " \n");
             myargs[0] = token;
             int i = 1;
             while(token != NULL){
@@ -99,10 +103,11 @@ int main(int argc, char *argv[]){
                 myargs[i] = token;
                 i++;
             }
-            //write(1, myargs[0], strlen(myargs[0]));
+            
         }
+       
         newProcess(myargs);
-        if (argc == 1) {
+        if(argc == 1){
             printPrompt();
             continue;
         }
@@ -125,3 +130,15 @@ int main(int argc, char *argv[]){
 
     //aliasing = shortcuts
     //
+
+
+    // int whitespace = 0;
+    // for(int i = 0; i < strlen(buffer); i++){
+    //     if(isspace(buffer[0] == 0)){
+    //         whitespace = 1;
+    //         break;
+    //     }
+    // }
+    // if(whitespace == 0){
+    //     continue;
+    // }
