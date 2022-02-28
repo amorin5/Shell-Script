@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
+#include<sys/wait.h>
 //#include "linkedList.c"
 
 //TO-DOs
@@ -16,15 +17,20 @@ void printPrompt(){
 }
 
 
-// int newProcess(char *argv[]){
-//     int rc = fork();
-//     if(rc < 0){
-//         //fork failed, print error message
-//     } else if(rc == 0){
-//         char *myargs[3];
-//         myargs[0] = strdup(argv[])
-//     }
-// }
+int newProcess(char *myargs[]){
+    //write(1, myargs[0], strlen(myargs[0]));
+    //write(1, myargs[1], strlen(myargs[1]));
+    int rc = fork();
+    if (rc < 0) {   //Fork Error
+        exit(1);
+    } else if(rc == 0){
+        execv(myargs[0], myargs);
+    }
+    else {
+       rc = wait(NULL);
+    }
+    return 0;
+}
 
 // int batchMode(file fp){
 //     while(fgets(out, 512, fp) != NULL){
@@ -79,17 +85,17 @@ int main(int argc, char *argv[]){
         //     continue;
         // }
         //char *myargs[sizeof(buffer)];
-        myargs[0] = "";
+        //myargs[0] = "";
         //seperating the line into the args
         if(strstr(buffer, ">") != NULL){
-            token = strtok(buffer, " >");
-            myargs[0] = token;
-            int i = 1;
-            while(token != NULL){
-                token = strtok(NULL, " ");
-                myargs[i] = token;
-                i++;
-            }
+            // token = strtok(buffer, " >");
+            // myargs[0] = token;
+            // int i = 1;
+            // while(token != NULL){
+            //     token = strtok(NULL, " ");
+            //     myargs[i] = token;
+            //     i++;
+            // }
             // MODIFIES MYARGS
             //space deliminating based on > and whitespace
             
@@ -107,16 +113,21 @@ int main(int argc, char *argv[]){
 
             //base case -- break the line into array of arguments
             token = strtok(buffer, " ");
+            // char *myargs[sizeof(buffer)];
             myargs[0] = token;
             int i = 1;
             while(token != NULL){
-                token = strtok(NULL, " ");
+                token = strtok(NULL, " \n");
                 myargs[i] = token;
                 i++;
             }
+            //write(1, myargs[0], strlen(myargs[0]));
         }
-        //newProcess(myargs);
-         
+        newProcess(myargs);
+        if (argc == 1) {
+            printPrompt();
+            continue;
+        }
     }
     return(0);
     }
