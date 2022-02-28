@@ -4,8 +4,8 @@
 #include <stdbool.h>
 
 struct node {
-   char[] data;
-   char[] key;
+   char data[512];
+   char key[512];
    struct node *next;
 };
 
@@ -20,7 +20,7 @@ void printList() {
 	
    //start from the beginning
    while(ptr != NULL) {
-      printf("(%d,%d) ",ptr->key,ptr->data);
+      printf("(%s,%s) ",ptr->key,ptr->data);
       ptr = ptr->next;
    }
 	
@@ -28,10 +28,11 @@ void printList() {
 }
 
 //insert link at the first location
-void insertFirst(int key, int data) {
+void insertFirst(char key[], char data[]) {
    //create a link
    struct node *link = (struct node*) malloc(sizeof(struct node));
 	
+   //implement for loop to assign each char in the array
    link->key = key;
    link->data = data;
 	
@@ -60,7 +61,7 @@ int length() {
 }
 
 //find a link with given key
-struct node* find(int key) {
+struct node* find(char key[]) {
 
    //start from the first link
    struct node* current = head;
@@ -71,7 +72,7 @@ struct node* find(int key) {
    }
 
    //navigate through list
-   while(current->key != key) {
+   while(strstr(current->key, key) == NULL) {
 	
       //if it is last node
       if(current->next == NULL) {
@@ -87,7 +88,7 @@ struct node* find(int key) {
 }
 
 //delete a link with given key
-struct node* delete(int key) {
+struct node* delete(char key[]) {
 
    //start from the first link
    struct node* current = head;
@@ -99,7 +100,7 @@ struct node* delete(int key) {
    }
 
    //navigate through list
-   while(current->key != key) {
+   while(strstr(current->key, key) == NULL) {
 
       //if it is last node
       if(current->next == NULL) {

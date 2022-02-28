@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include "linkedList.c"
+//#include "linkedList.c"
 
 //TO-DOs
 //1. string concatenation to write function
@@ -64,45 +64,60 @@ int main(int argc, char *argv[]){
         printPrompt();
     }
     char buffer[512];
+    char *myargs[sizeof(buffer)];
+    char *token;
     while(fgets(buffer, 512, fp)){
-        //case one -- check if blank line in file/stdin
-        int whitespace = 0;
-        for(int i = 0; i < strlen(buffer); i++){
-            if(isspace(buffer[0] == 0)){
-                whitespace = 1;
-                break;
-            }
-        }
-        if(whitespace == 0){
-            continue;
-        }
-        char *myargs[sizeof(buffer)];
-        myargs[0] = "hi";
-        printf("%s", myargs[0]);
+        //case one -- check if blank line in file/stdin - causing segfault rn
+        // int whitespace = 0;
+        // for(int i = 0; i < strlen(buffer); i++){
+        //     if(isspace(buffer[0] == 0)){
+        //         whitespace = 1;
+        //         break;
+        //     }
+        // }
+        // if(whitespace == 0){
+        //     continue;
+        // }
+        //char *myargs[sizeof(buffer)];
+        myargs[0] = "";
         //seperating the line into the args
         if(strstr(buffer, ">") != NULL){
+            token = strtok(buffer, " >");
+            myargs[0] = token;
+            int i = 1;
+            while(token != NULL){
+                token = strtok(NULL, " ");
+                myargs[i] = token;
+                i++;
+            }
             // MODIFIES MYARGS
             //space deliminating based on > and whitespace
             
             //redirection method
         } else if(strstr(buffer, "alias") != NULL){
-            struct node *linkedList = (struct node*) malloc(sizeof(struct node));
+            //struct node *linkedList = (struct node*) malloc(sizeof(struct node));
 
             //deliminate based on alias -- only 3 args so only the first 2 whitespaces
             //alias method
             //check if second argument is alias, unalias, or exit -- error
             //check if arg[0] is unalias or alias, then determine if add/subtract from LL
-        } else{
+        } else {
             // MODIFIES MYARGS
             //check if arg[0] is in the linked list of alias
-            myargs[0] = strtok(buffer, " ");
-            for(int i = 0; i < strlen(buffer); i++){
+
+            //base case -- break the line into array of arguments
+            token = strtok(buffer, " ");
+            myargs[0] = token;
+            int i = 1;
+            while(token != NULL){
+                token = strtok(NULL, " ");
+                myargs[i] = token;
                 i++;
-                myargs[i]
             }
         }
-           
-        }
+        //newProcess(myargs);
+         
+    }
     return(0);
     }
 
