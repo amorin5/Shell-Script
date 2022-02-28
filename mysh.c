@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include<sys/wait.h>
 //#include "linkedList.c"
-b
+
 //TO-DOs
 //1. string concatenation to write function
 //2. linked list for alias method (struct)
@@ -36,14 +36,20 @@ int newProcess(char *myargs[]){
 int main(int argc, char *argv[]){
     FILE *fp;
     int flag = 0;
-    if(argc == 2){
+    if(argc == 3){
+        write(STDERR_FILENO, "Usage: mysh [batch-file]\n", 25);
+        return(1);
+    } else if(argc == 2){
         fp = fopen(argv[1], "r");
         flag = 1;
-       if(fp == NULL){
-           //char errorname[] = "Error: Cannot open file .\n";
-          // write(2, errorname, 20);
-       }
-    }else{
+        if(fp == NULL){
+            char str[] = "Error: Cannot open file ";
+            strcat(str, argv[1]);
+            strcat(str, ".\n");
+            write(STDERR_FILENO, str, strlen(str));
+            return(1);
+        }
+    } else {
         fp = stdin;
         printPrompt();
     }
@@ -87,7 +93,6 @@ int main(int argc, char *argv[]){
             }
             
         }
-       
         newProcess(myargs);
         if(argc == 1){
             printPrompt();
