@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include<sys/wait.h>
 //#include "linkedList.c"
-
+b
 //TO-DOs
 //1. string concatenation to write function
 //2. linked list for alias method (struct)
