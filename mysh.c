@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+#include <stdlib.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]){
+
+    return 0;
+}
+=======
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -121,3 +130,4 @@ int main(int argc, char *argv[]){
 
     //aliasing = shortcuts
     //
+>>>>>>> main
