@@ -1,6 +1,10 @@
 #include <stdlib.h>
+#include <unistd.h>
 
-void main(int argc, char **argv){
+int main(int argc, char *argv[]){
+    if(argc == 1) {
+        printf("We are in interactive mode");
+    }
     if(argc > 2){
         printf("Usage: ./mysh [arg]");
     }
@@ -23,4 +27,5 @@ void main(int argc, char **argv){
 
     //aliasing = shortcuts
     //
+    return 0;
 }
