@@ -1,2 +1,2 @@
-alias ls /bin/ls
+alias ls /bin/ls -l
 ls

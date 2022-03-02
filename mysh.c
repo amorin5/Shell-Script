@@ -4,8 +4,19 @@
 #include <string.h>
 #include <ctype.h>
 #include<sys/wait.h>
-//#include "linkedList.c"
 
+//alias method functionality --
+//CHECKS -- buffer contains alias OR unalias, check if buffer ONLY contains alias, check if alias
+//already exists, check if key == unalias, alias, or exit
+//1. add nodes to the linked list for multiple aliases, override for keys
+//2. remove nodes for unaliasing
+//3. print method for printing all keys (cmd alias)
+//* special case * alias redirection
+
+//TO-DOs
+//2. linked list for alias method (struct)
+//3. redirection method
+//4. unalias 
 
 struct node {
    char *data;
@@ -22,13 +33,6 @@ void push(struct node* next, char *new_data, char *new_key){
     new_node->next = next;
     next = new_node;
 }
-
-//TO-DOs
-//1. string concatenation to write function
-//2. linked list for alias method (struct)
-//3. redirection method
-//4. unalias
-//6. the 
 
 void printPrompt(){
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));                
@@ -53,7 +57,8 @@ int newProcess(char *myargs[]){
 int main(int argc, char *argv[]){
     FILE *fp;
     int flag = 0;
-    if(argc == 3){
+
+    if(argc < 1 || argc > 2){
         write(STDERR_FILENO, "Usage: mysh [batch-file]\n", 25);
         return(1);
     } else if(argc == 2){
@@ -70,6 +75,7 @@ int main(int argc, char *argv[]){
         fp = stdin;
         printPrompt();
     }
+    
     char buffer[512];
     char *myargs[sizeof(buffer)];
     char *token;
@@ -81,10 +87,26 @@ int main(int argc, char *argv[]){
             myargs[j] = 0;
             j++;
         }
+
         if(flag == 1){
             write(1, buffer, strlen(buffer));
         }
-        //seperating the line into the args -- redirection
+
+        if(strstr(buffer, "alias") != NULL){
+            //alias method
+            printf("entered\n");
+            if(head == NULL){
+                head = malloc(sizeof(struct node));
+                head->key = myargs[1];
+                printf("%s\n", myargs[2]);
+                head->data = myargs[2];
+                head->next = NULL;
+                if(flag == 0){
+                    printPrompt();
+                }
+                continue;
+            }
+        } else {
             //base case -- break the line into array of arguments
             token = strtok(buffer, " \n");
             myargs[0] = token;
@@ -94,11 +116,10 @@ int main(int argc, char *argv[]){
                 myargs[i] = token;
                 i++;
             }
-                //check if arg[0] belongs to the linked list
+            //check if arg[0] belongs to the linked list
             if(head != NULL){
                 struct node *current = malloc(sizeof(struct node));
                 current = head;
-            //printf("%d\n", size);
                 printf("%s Hello\n", head->key);
                 while(current != NULL){
                     printf("Hello\n");
@@ -111,29 +132,13 @@ int main(int argc, char *argv[]){
                 current = current->next;
                 }
             }   
-            if(strstr(myargs[0], "alias") != NULL){
-                printf("entered\n");
-                if(head == NULL){
-                    head = malloc(sizeof(struct node));
-                    head->key = myargs[1];
-                    head->data = myargs[2];
-                    head->next = NULL;
-                }
-                
-                // } else if(next->key == NULL) {
-                //     next->key = myargs[1];
-                //     next->data = myargs[2];
-                // } else {
-                //     push(next, myargs[1], myargs[2]);
-                // }
-                continue;
-            }
+        }
+        printf("reached process");
         newProcess(myargs);
-        if(argc == 1){
+        if(argc == 1) {
             printPrompt(); 
             continue;
-        }
-        
+        }     
     }
     return(0);
 }
