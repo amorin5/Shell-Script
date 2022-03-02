@@ -1,0 +1,23 @@
+alias ls /bin/ls tests
+alias
+linkedList.c
+Makefile
+mysh
+mysh.c
+run-tests.sh
+tester
+tests
+tests-out
+test.txt
+ls
+linkedList.c
+Makefile
+mysh
+mysh.c
+run-tests.sh
+tester
+tests
+tests-out
+test.txt
+alias ls /bin/cat tests/19.desc
+alias

@@ -36,8 +36,6 @@ void printPrompt(){
 
 
 int newProcess(char *myargs[]){
-    //write(1, myargs[0], strlen(myargs[0]));
-    //write(1, myargs[1], strlen(myargs[1]));
     printf("NEW PROCESS RUN\n");
     int rc = fork();
     int status;
@@ -76,33 +74,25 @@ int main(int argc, char *argv[]){
     char *myargs[sizeof(buffer)];
     char *token;
     struct node *head = NULL;
-    //struct node *head = malloc(sizeof(struct node));
-    //struct node *next = malloc(sizeof(struct node));
-    
-    int size = 1;
+
     while(fgets(buffer, 512, fp)){
+        int j = 0;
+        while(myargs[j] != NULL) {
+            myargs[j] = 0;
+            j++;
+        }
         if(flag == 1){
             write(1, buffer, strlen(buffer));
         }
         //seperating the line into the args -- redirection
-        if(strchr(buffer, '>')){
-            token = strtok(buffer, " >");
+            //base case -- break the line into array of arguments
+            token = strtok(buffer, " \n");
             myargs[0] = token;
             int i = 1;
             while(token != NULL){
                 token = strtok(NULL, " \n");
                 myargs[i] = token;
                 i++;
-            }
-            //redirection method -- better to do here or easier to do in new call?
-        } else {
-            //base case -- break the line into array of arguments
-            token = strtok(buffer, " \n");
-            myargs[0] = token;
-            while(token != NULL){
-                token = strtok(NULL, " \n");
-                myargs[size] = token;
-                size++;
             }
                 //check if arg[0] belongs to the linked list
             if(head != NULL){
@@ -114,7 +104,7 @@ int main(int argc, char *argv[]){
                     printf("Hello\n");
                     if(strstr(myargs[0], current->key) != NULL){
                         myargs[0] = current->data;
-                        myargs[1] = 0;
+                        //myargs[1] = 0;
                         printf("MYARGS0: %s MYARGS1: %s\n", myargs[0], myargs[1]);
                         break;
                     }
@@ -129,6 +119,7 @@ int main(int argc, char *argv[]){
                     head->data = myargs[2];
                     head->next = NULL;
                 }
+                
                 // } else if(next->key == NULL) {
                 //     next->key = myargs[1];
                 //     next->data = myargs[2];
@@ -137,7 +128,6 @@ int main(int argc, char *argv[]){
                 // }
                 continue;
             }
-        }
         newProcess(myargs);
         if(argc == 1){
             printPrompt(); 
@@ -162,17 +152,5 @@ int main(int argc, char *argv[]){
     //if exists, overwrite, else create a new file
 
     //aliasing = shortcuts
-    //
 
-
-    // int whitespace = 0;
-    // for(int i = 0; i < strlen(buffer); i++){
-    //     if(isspace(buffer[0] == 0)){
-    //         whitespace = 1;
-    //         break;
-    //     }
-    // }
-    // if(whitespace == 0){
-    //     continue;
-    // }
 

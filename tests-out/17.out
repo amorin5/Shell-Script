@@ -1,0 +1,40 @@
+alias catthat /bin/cat tests-out/tmp.txt
+/bin/echo hello there >tests-out/tmp.txt
+catthat
+entered
+cho Hello
+Hello
+MYARGS0: o MYARGS1: hello
+NEW PROCESS RUN
+t Hello
+Hello
+MYARGS0: o MYARGS1: (null)
+NEW PROCESS RUN
+entered
+cho Hello
+Hello
+MYARGS0: o MYARGS1: hello
+NEW PROCESS RUN
+t Hello
+Hello
+MYARGS0: o MYARGS1: (null)
+NEW PROCESS RUN
+catthat
+entered
+cho Hello
+Hello
+MYARGS0: o MYARGS1: hello
+NEW PROCESS RUN
+t Hello
+Hello
+MYARGS0: o MYARGS1: (null)
+NEW PROCESS RUN
+entered
+cho Hello
+Hello
+MYARGS0: o MYARGS1: hello
+NEW PROCESS RUN
+t Hello
+Hello
+MYARGS0: o MYARGS1: (null)
+NEW PROCESS RUN

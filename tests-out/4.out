@@ -1,0 +1,9 @@
+exit
+/bin/echo "this should not print"
+"this should not print"
+NEW PROCESS RUN
+NEW PROCESS RUN
+/bin/echo "this should not print"
+"this should not print"
+NEW PROCESS RUN
+NEW PROCESS RUN
