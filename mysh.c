@@ -38,9 +38,20 @@ void printPrompt(){
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));                
 }
 
+int checkWhiteSpace(char* buffer){
+    int whitespace = 0;
+    for(int i = 0; i < strlen(buffer); i++){
+        if(isspace(buffer[i]) == 0){
+            whitespace = 1;
+            break;
+        }
+    }        
+    return whitespace;
+}   
+
 
 int newProcess(char *myargs[]){
-    printf("NEW PROCESS RUN\n");
+    //printf("NEW PROCESS RUN\n");
     int rc = fork();
     int status;
     if (rc < 0) {   //Fork Error
@@ -93,23 +104,80 @@ int main(int argc, char *argv[]){
             write(1, buffer, strlen(buffer));
         }
 
-        if(strstr(buffer, "alias") != NULL){
-            //alias method
-            printf("entered\n");
-            if(head == NULL){
-                head = malloc(sizeof(struct node));
-                head->key = myargs[1];
-                printf("%s\n", myargs[2]);
-                head->data = myargs[2];
-                head->next = NULL;
-                if(flag == 0){
-                    printPrompt();
-                }
-                continue;
+         if (checkWhiteSpace(buffer) == 0) {
+            if (flag == 0) {
+                printPrompt();
+            }   
+            continue;
+        }
+
+        token = strtok(buffer, delim);
+
+        if (strcmp(token, "alias") == 0 || strcmp(token, "unalias") == 0)  {
+            char unaliasError[] = "unalias: Incorrect number of arguments.\n";
+            int mode = 0;
+            if(strcmp(token, "unalias") == 0) {
+                mode = 1;
             }
+            //printf("entered\n");
+            //token = strtok(buffer, delim);
+            token = strtok(NULL, delim);
+            //printf("hello\n");  || strchr(token, '\n') != NULL
+            if (token == NULL) {
+                if (mode == 0) {
+                    printf("it's just alias\n");
+                    // Deal with printing out all of the aliases
+                }
+                else {
+                    write(1, unaliasError, strlen(unaliasError));
+                }
+            }
+            // || strchr(token, '\n') != NULL
+            else {
+                //char * aliasName = token;
+                //printf("here i am");
+                token = strtok(NULL, delim);
+                //char* command = token + strlen(token) + 1;
+                if (token == NULL) {
+                    if (mode == 0) {
+                        printf("check if alias exists and print it out if it does\n");
+                    // check if alias exists
+                    // if exits print out
+                    // if not continue
+                    }
+                    else {
+                        printf("check if alias exists, if it does delete it\n");
+                    }
+                }
+                //printf("%s", command);
+                printf("Hello\n");
+                token = strtok(NULL, delim);
+                if (token == NULL) {
+                    printf("%s\n", token);
+                    if (mode == 0) {
+                        printf("%s\n", token);
+                        printf("put the alias in\n");
+                    }
+                    else {
+                        write(1, unaliasError, strlen(unaliasError));
+                    }
+                }
+                printf("process command\n");
+                // if(head == NULL){
+                //     head = malloc(sizeof(struct node));
+                //     head->key = myargs[1];
+                //     printf("%s\n", myargs[2]);
+                //     head->data = myargs[2];
+                //     head->next = NULL;
+                //     if(flag == 0){
+                //         printPrompt();
+                //     }
+                //     continue;
+                // }
+            }         
         } else {
             //base case -- break the line into array of arguments
-            token = strtok(buffer, delim);
+            //token = strtok(buffer, delim);
             myargs[0] = token;
             int i = 1;
             while(token != NULL){
@@ -134,7 +202,7 @@ int main(int argc, char *argv[]){
                 }
             }   
         }
-        printf("reached process");
+        //printf("reached process");
         newProcess(myargs);
         if(argc == 1) {
             printPrompt(); 
