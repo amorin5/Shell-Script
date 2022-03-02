@@ -57,6 +57,7 @@ int newProcess(char *myargs[]){
 int main(int argc, char *argv[]){
     FILE *fp;
     int flag = 0;
+    const char delim[9] = " \n\t\v\t\r";
 
     if(argc < 1 || argc > 2){
         write(STDERR_FILENO, "Usage: mysh [batch-file]\n", 25);
@@ -108,11 +109,11 @@ int main(int argc, char *argv[]){
             }
         } else {
             //base case -- break the line into array of arguments
-            token = strtok(buffer, " \n");
+            token = strtok(buffer, delim);
             myargs[0] = token;
             int i = 1;
             while(token != NULL){
-                token = strtok(NULL, " \n");
+                token = strtok(NULL, delim);
                 myargs[i] = token;
                 i++;
             }
