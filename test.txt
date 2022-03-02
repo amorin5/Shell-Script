@@ -1,3 +1,1 @@
-d
-c
-a
+ /bin/ls .>slfj sldfj >
