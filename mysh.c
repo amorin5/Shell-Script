@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 #include<sys/wait.h>
+#include<fcntl.h>
+
 
 //alias method functionality --
 //CHECKS -- buffer contains alias OR unalias, check if buffer ONLY contains alias, check if alias
@@ -26,7 +28,7 @@ struct node {
 
 
 void push(struct node* next, char *new_data, char *new_key){
-    printf("called\n");
+    //printf("called\n");
     struct node *new_node = malloc(sizeof(struct node));
     new_node->data  = new_data;
     new_node->key = new_key;
@@ -38,15 +40,45 @@ void printPrompt(){
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));                
 }
 
+int redirection(char* myargs[]){
+   int i = 0;
+   while(myargs[i] != NULL){
+        if(strchr(myargs[i], '>')){
+            if(strlen(myargs[i]) != 1){
+                myargs[i] = strrchr(myargs[i], '>');
+                //TODO handle for whitespace
+            }
+            if(myargs[i + 2] != NULL){
+                write(STDERR_FILENO, "Redirection misformatted.\n", 26);
+                return 1;
+            }
+            myargs[i] = '\0';
+            break;
+        }
+        i++;
+    }
+
+    char *fn = myargs[i + 1];
+    char *writeTo = myargs[i - 1];
+    int fd = open(fn, O_WRONLY, 0666);
+    //write(1, fn, strlen(fn));
+    dup2(fd, 1);
+    write(fd, writeTo, strlen(writeTo));
+    //fopen(fn, "w+");
+    return 0;
+}
+
 
 int newProcess(char *myargs[]){
-    printf("NEW PROCESS RUN\n");
+    //printf("NEW PROCESS RUN\n");
     int rc = fork();
     int status;
     if (rc < 0) {   //Fork Error
         exit(1);
     } else if(rc == 0){
+        //TODO  - redirect the filename into the output file
         execv(myargs[0], myargs);
+        
     }
     else {
        rc = waitpid(rc, &status, 0);
@@ -95,7 +127,7 @@ int main(int argc, char *argv[]){
 
         if(strstr(buffer, "alias") != NULL){
             //alias method
-            printf("entered\n");
+            //printf("entered\n"); 
             if(head == NULL){
                 head = malloc(sizeof(struct node));
                 head->key = myargs[1];
@@ -111,6 +143,9 @@ int main(int argc, char *argv[]){
             //base case -- break the line into array of arguments
             token = strtok(buffer, delim);
             myargs[0] = token;
+            if(strstr(myargs[0], "exit")){
+                return 0;
+            }
             int i = 1;
             while(token != NULL){
                 token = strtok(NULL, delim);
@@ -121,20 +156,23 @@ int main(int argc, char *argv[]){
             if(head != NULL){
                 struct node *current = malloc(sizeof(struct node));
                 current = head;
-                printf("%s Hello\n", head->key);
+                //printf("%s Hello\n", head->key);
                 while(current != NULL){
-                    printf("Hello\n");
+                   // printf("Hello\n");
                     if(strstr(myargs[0], current->key) != NULL){
                         myargs[0] = current->data;
                         //myargs[1] = 0;
-                        printf("MYARGS0: %s MYARGS1: %s\n", myargs[0], myargs[1]);
+                      //  printf("MYARGS0: %s MYARGS1: %s\n", myargs[0], myargs[1]);
                         break;
                     }
                 current = current->next;
                 }
             }   
         }
-        printf("reached process");
+        //printf("reached process");
+        if(redirection(myargs) != 0){
+            continue;
+        };
         newProcess(myargs);
         if(argc == 1) {
             printPrompt(); 

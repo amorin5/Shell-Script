@@ -1,10 +1,4 @@
 /bin/echo making a new file > tests-out/tmp.txt
-making a new file > tests-out/tmp.txt
+making a new file
 /bin/cat tests-out/tmp.txt
 exit
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN

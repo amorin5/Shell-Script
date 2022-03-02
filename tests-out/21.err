@@ -1,2 +1,2 @@
 timeout: the monitored command dumped core
-./tester/run-tests.sh: line 26: 1396421 Segmentation fault      timeout 5 ./mysh tests/21.in
+./tester/run-tests.sh: line 26: 1494722 Segmentation fault      timeout 5 ./mysh tests/21.in
