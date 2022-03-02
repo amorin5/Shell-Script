@@ -127,9 +127,17 @@ int main(int argc, char *argv[]){
                 if (mode == 0) {
                     printf("it's just alias\n");
                     // Deal with printing out all of the aliases
+                    if (flag == 0) {
+                        printPrompt();
+                    }   
+                    continue;
                 }
                 else {
                     write(1, unaliasError, strlen(unaliasError));
+                    if (flag == 0) {
+                        printPrompt();
+                    } 
+                    continue;
                 }
             }
             // || strchr(token, '\n') != NULL
@@ -144,9 +152,17 @@ int main(int argc, char *argv[]){
                     // check if alias exists
                     // if exits print out
                     // if not continue
+                        if (flag == 0) {
+                            printPrompt();
+                        } 
+                        continue;
                     }
                     else {
                         printf("check if alias exists, if it does delete it\n");
+                        if (flag == 0) {
+                            printPrompt();
+                        } 
+                        continue;
                     }
                 }
                 //printf("%s", command);
