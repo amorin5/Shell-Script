@@ -1,5 +1,0 @@
-exit
-/bin/echo "this should not print"
-"this should not print"
-/bin/echo "this should not print"
-"this should not print"

@@ -1,3 +1,2 @@
-/bin/echo hello
-/bin/cat test.txt
-/bin/echo test
+alias ls /bin/ls
+ls
