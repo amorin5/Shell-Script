@@ -38,6 +38,7 @@ int newProcess(char *myargs[]) {
         }
         myargs[i] = '\0';
         printf("%s\n", myargs[i + 1]);
+        //TODO  - redirect the filename into the output file
         execv(myargs[0], myargs);
     }
     else {
