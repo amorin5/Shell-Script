@@ -325,7 +325,6 @@ void interactive(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     FILE *fp;
     char buffer[512];
-    //int flag = 0;
 
     if (argc < 1 || argc > 2) {
         write(STDERR_FILENO, "Usage: mysh [batch-file]\n", 25);
