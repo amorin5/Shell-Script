@@ -1,1 +1,0 @@
-3 > tests-out/3.tmp
