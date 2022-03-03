@@ -140,6 +140,14 @@ void alias(char *myargs[], int argc) {
     }
     else {
         // go through aliases, check if it exists and override if it does
+        char dangerError[] = "alias: Too dangerous to alias that.\n";
+
+        if (strcmp(myargs[1], "alias") == 0 ||
+        strcmp(myargs[1], "unalias") == 0 ||
+        strcmp(myargs[1], "exit") == 0) {
+            write(2, dangerError, strlen(dangerError));
+        } 
+
         if (head == NULL) {
             head = malloc(sizeof(struct alias));
             head->aliasName = strdup(myargs[1]);
@@ -157,6 +165,9 @@ void alias(char *myargs[], int argc) {
                 if(strcmp(current->aliasName, myargs[1]) == 0) {
                     int i = 2;
                     while(myargs[i] != NULL) {
+                        if (head->argv[i-2] != NULL) {
+                            free(head->argv[i-2]);
+                        }
                         head->argv[i-2] = strdup(myargs[i]);
                         i++;
                     }
@@ -186,7 +197,7 @@ void unalias(char* myargs[], int argc) {
     char unaliasError[] = "unalias: Incorrect number of arguments.\n";
 
     if (argc <= 1 || argc > 2) {
-        write(1, unaliasError, strlen(unaliasError));
+        write(2, unaliasError, strlen(unaliasError));
     }
     else {
         struct alias *current = head;
@@ -247,22 +258,20 @@ int checkAlias(char* myargs[]) {
     return 0;
 }
 void exitShell() {
-    // struct alias* current = head;
-    // struct alias* prev = NULL;
+    struct alias* tmp;
 
-    // while(current != NULL) {
-    //     if (current->nextAlias == NULL && prev == NULL) {
-    //         free(current);
-    //         head = NULL;
-    //         exit(0);
-    //     }
-    //     else {
-    //         free(prev); 
-    //     }
-    //     current = current->nextAlias;
-    // }
-    //printf("User typed exit");
-    exit(0);
+    while (head != NULL) {
+       tmp = head;
+       head = head->nextAlias;
+       int i = 0;
+       while (tmp->argv[i] != NULL) {
+           free(tmp->argv[i]);
+           i++;
+       }
+       free(tmp->aliasName);
+       free(tmp);
+    }
+    _exit(0);
     // TODO: clean up all the memory
 }
 
