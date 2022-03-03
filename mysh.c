@@ -53,41 +53,35 @@ void newProcess(char *myargs[]) {
 
 struct alias *head = NULL;
 
-void printAlias() {
-    struct alias *current = malloc(sizeof(struct alias));
-    current = head;
-    while (current != NULL) {
-        write(1, current->aliasName, strlen(current->aliasName));
-        write(1, " ", 1);
-        int i = 0;
-        while(current->argv[i] != NULL) {
-            write(1, current->argv[i], strlen(current->argv[i]));
-            if(current->argv[i + 1] != NULL) {
-                write(1, " ", 1);
-            }
-            i++;
+void printAlias(struct alias *current) {
+    write(1, current->aliasName, strlen(current->aliasName));
+    write(1, " ", 1);
+    int i = 0;
+    while(current->argv[i] != NULL) {
+        write(1, current->argv[i], strlen(current->argv[i]));
+        if(current->argv[i + 1] != NULL) {
+            write(1, " ", 1);
         }
-        current = current->nextAlias;
+        i++;
     }
-    free(current);
+    write(1, "\n", 1);
 }
 
 void alias(char *myargs[], int argc) {
-    struct alias *current = malloc(sizeof(struct alias));
-    current = head;
-
     if (argc == 1) {
         // print aliases
+        struct alias *current = head;
         while (current != NULL) {
-            printAlias();
+            printAlias(current);
             current = current->nextAlias;
         }
     }
     else if (argc == 2) {
         // check if alias exists and print it if it does
+        struct alias *current = head;
         while (current != NULL) {
-            if(myargs[1] == current->aliasName) {
-                printAlias();
+            if(strcmp(myargs[1], current->aliasName) == 0) {
+                printAlias(current);
                 return;
             }
             current = current->nextAlias;
@@ -96,7 +90,7 @@ void alias(char *myargs[], int argc) {
     else {
         // go through aliases, check if it exists and override if it does
         // add to the end if doesn't
-        printf("Deal with adding the alias\n");
+        // printf("Deal with adding the alias\n");
         if (head == NULL) {
             head = malloc(sizeof(struct alias));
             head->aliasName = strdup(myargs[1]);
@@ -107,13 +101,37 @@ void alias(char *myargs[], int argc) {
                 i++;
             }
             head->argv[i-2] = NULL;
-            //head->argv = aliasArgs;
             head->nextAlias = NULL;
         }
-
+        else {
+            struct alias *current = head;
+            while (current != NULL) {
+                if(strcmp(current->aliasName, myargs[1]) == 0) {
+                    int i = 2;
+                    while(myargs[i] != NULL) {
+                        head->argv[i-2] = strdup(myargs[i]);
+                        i++;
+                    }
+                    head->argv[i-2] = NULL;
+                    return;
+                }
+                if (current->nextAlias == NULL) {
+                    break;
+                }
+                current = current->nextAlias;
+            }
+            struct alias* newAlias = malloc(sizeof(struct alias));
+            newAlias->aliasName = strdup(myargs[1]);
+            int i = 2;
+            while(myargs[i] != NULL) {
+                newAlias->argv[i-2] = strdup(myargs[i]);
+                i++;
+            }
+            newAlias->argv[i-2] = NULL;
+            newAlias->nextAlias = NULL;
+            current->nextAlias = newAlias;
+        }
     }
-
-    free(current);
 }
 
 void unalias(char* myargs[], int argc) {
