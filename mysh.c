@@ -7,15 +7,6 @@
 #include<fcntl.h>
 #include <errno.h>
 
-// alias method functionality --
-// CHECKS -- buffer contains alias OR unalias, check if buffer ONLY contains alias, check if alias
-// already exists, check if key == unalias, alias, or exit
-// 1. add nodes to the linked list for multiple aliases, override for keys
-// 2. remove nodes for unaliasing
-// 3. print method for printing all keys (cmd alias)
-//* special case * alias redirection
-
-
 struct alias {
     char *aliasName;
     char *argv[256];
@@ -278,17 +269,13 @@ void exitShell() {
        free(tmp);
     }
     _exit(0);
-    // TODO: clean up all the memory
-}
+\}
 
 void processCommand(char* buffer) {
     char *myargs[256];
     char *token;
     const char delim[] = " \n\t\v\t\r";
 
-    // TODO: Redirection code
-
-   // write(1, copy, strlen(copy));
    char copy[512];
    strcpy(copy, buffer);
     token = strtok(buffer, delim);
