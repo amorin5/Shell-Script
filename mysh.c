@@ -37,15 +37,12 @@ void printPrompt() {
 
 int redirection(char* myargs[]){
    int i = 0;
+  //char* carrot = malloc(sizeof(char));
    while(myargs[i] != NULL){
         if(strchr(myargs[i], '>')){
             if(strlen(myargs[i]) != 1){
-                myargs[i] = strrchr(myargs[i], '>');
-                //TODO handle for whitespace
-            }
-            if(myargs[i + 2] != NULL){
-                write(STDERR_FILENO, "Redirection misformatted.\n", 26);
-                return 1;
+               // myargs[i] = strrchr(myargs[i], '>');
+                strtok(myargs[i], ">");
             }
             myargs[i] = '\0';
             break;
@@ -54,14 +51,21 @@ int redirection(char* myargs[]){
     }
 
     char *fn = myargs[i + 1];
+    //write(1, fn, strlen(fn));
    // char *writeTo = myargs[i - 1];
     FILE *fd = fopen(fn, "wb+");
+    if(myargs[i + 2] != NULL){
+        write(STDERR_FILENO, "Redirection misformatted.\n", 26);
+        return 1;
+    }
     if(fd == NULL){
         perror("Error in redirecting and opening file: ");
         return 1;
     }
+    
     //write(1, fn, strlen(fn));
     dup2(fileno(fd), STDOUT_FILENO);
+    fclose(fd);
     // fork();
     // execv(myargs[0], myargs);
     //write(fd, writeTo, strlen(writeTo));
@@ -77,7 +81,6 @@ void newProcess(char *myargs[]) {
         exit(1);
     }
     else if (rc == 0) {
-        // TODO: handle redirection
         int i = 0;
         while(myargs[i] != NULL){
             if(strchr(myargs[i], '>')){
