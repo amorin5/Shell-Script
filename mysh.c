@@ -63,7 +63,7 @@ int redirection(char* copy){
     FILE *fd = fopen(jump(filename), "w");
 
     if(dup2(fileno(fd), 1) == -1){
-         fprintf(stderr, "Error: %s\n", strerror(errno));
+        write(STDERR_FILENO, "Dupe error", 10);
     }
     execv(cmd, myargs);
     fclose(fd);
