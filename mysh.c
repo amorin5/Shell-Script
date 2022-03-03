@@ -24,6 +24,17 @@ void printPrompt() {
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));
 }
 
+int checkWhiteSpace(char* buffer){
+    int whitespace = 0;
+    for(int i = 0; i < strlen(buffer); i++){
+        if(isspace(buffer[i]) == 0){
+            whitespace = 1;
+            break;
+        }
+    }        
+    return whitespace;
+}  
+
 void newProcess(char *myargs[]) {
     int rc = fork();
     int status;
@@ -33,7 +44,9 @@ void newProcess(char *myargs[]) {
     else if (rc == 0) {
         // TODO: handle redirection
         execv(myargs[0], myargs);
-        // TODO: handle if execv fails print error message
+        char* error = myargs[0];
+        strcat(error, ": Command not found.\n");
+        write(STDERR_FILENO, error, strlen(error));
         _exit(0);
     }
     else {
@@ -186,6 +199,20 @@ int checkAlias(char* myargs[]) {
     return 0;
 }
 void exitShell() {
+    // struct alias* current = head;
+    // struct alias* prev = NULL;
+
+    // while(current != NULL) {
+    //     if (current->nextAlias == NULL && prev == NULL) {
+    //         free(current);
+    //         head = NULL;
+    //         exit(0);
+    //     }
+    //     else {
+    //         free(prev); 
+    //     }
+    //     current = current->nextAlias;
+    // }
     //printf("User typed exit");
     exit(0);
     // TODO: clean up all the memory
@@ -234,6 +261,10 @@ void interactive(int argc, char *argv[]) {
     printPrompt();
 
     while (fgets(buffer, 512, fp) != NULL) {
+        if (checkWhiteSpace(buffer) == 0) {
+            printPrompt();
+            continue;
+        }
         processCommand(buffer);
         printPrompt();
     }
@@ -263,6 +294,9 @@ int main(int argc, char *argv[]) {
 
         while (fgets(buffer, 512, fp) != NULL) {
             write(1, buffer, strlen(buffer));
+            if (checkWhiteSpace(buffer) == 0) {
+                continue;
+            }
             processCommand(buffer);
         }
         fclose(fp);
