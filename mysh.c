@@ -76,7 +76,7 @@ int redirection(char* copy){
     }
     execv(cmd, myargs);
     fclose(fd);
-
+    //free(copy);
     return 0;
 }
 
@@ -289,7 +289,8 @@ void processCommand(char* buffer) {
     // TODO: Redirection code
 
    // write(1, copy, strlen(copy));
-    char *copy = strdup(buffer);
+   char copy[512];
+   strcpy(copy, buffer);
     token = strtok(buffer, delim);
     int count = 0;
     
@@ -315,7 +316,7 @@ void processCommand(char* buffer) {
     }
     else {
         newProcess(myargs, copy);
-    }  
+    }
 }
 
 void interactive(int argc, char *argv[]) {
