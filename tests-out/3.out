@@ -162,9 +162,3 @@ segfault.c
 /bin/cat tests/3.desc
 Batchfile with multiple commands as input.
 exit
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN

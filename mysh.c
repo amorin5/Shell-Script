@@ -18,17 +18,7 @@ struct alias {
     char *aliasName;
     char *argv[256];
     struct alias *nextAlias;
-    
 };
-
-// void push(struct node *next, char *new_data, char *new_key) {
-//     printf("called\n");
-//     struct node *new_node = malloc(sizeof(struct node));
-//     new_node->data = new_data;
-//     new_node->key = new_key;
-//     new_node->next = next;
-//     next = new_node;
-// }
 
 void printPrompt() {
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));
@@ -92,7 +82,6 @@ void alias(char *myargs[], int argc) {
         if (head == NULL) {
             head = malloc(sizeof(struct alias));
             head->aliasName = strdup(myargs[1]);
-            //char *aliasArgs[256];
             int i = 2;
             while(myargs[i] != NULL) {
                 head->argv[i-2] = strdup(myargs[i]);
@@ -171,8 +160,34 @@ void unalias(char* myargs[], int argc) {
     }
 }
 
+int checkAlias(char* myargs[]) {
+    struct alias* current = head;
+    
+    while (current != NULL) {
+        if (strcmp(current->aliasName, myargs[0]) == 0) {
+            char* newArgs[256];
+            int i = 0;
+            while (current->argv[i] != NULL) {
+                newArgs[i] = current->argv[i];
+                i++;
+            }
+            int j = 1;
+            while (myargs[j] != NULL) {
+                newArgs[i] = myargs[j];
+                i++;
+                j++;
+            }
+            newArgs[i] = NULL;
+            newProcess(newArgs); 
+            return 1;  
+        }
+        current = current->nextAlias;
+    }
+    return 0;
+}
 void exitShell() {
-    printf("User typed exit");
+    //printf("User typed exit");
+    exit(0);
     // TODO: clean up all the memory
 }
 
@@ -193,11 +208,9 @@ void processCommand(char* buffer) {
     }
     myargs[count] = NULL;
 
-    // check if alias exists
-    // if alias exists, run command there
-    // if (checkAlias(myArgs) == 1) {
-    //     return;
-    // }
+    if (checkAlias(myargs) == 1) {
+        return;
+    }
 
     if (strcmp(myargs[0], "alias") == 0) {
         alias(myargs, count);

@@ -5,8 +5,3 @@ this should be in the file > tests-out/output26
 /bin/cat tests-out/output26
 /bin/echo hello
 hello
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
-NEW PROCESS RUN
