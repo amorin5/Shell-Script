@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <sys/wait.h>
 #include<fcntl.h>
+#include <errno.h>
 
 // alias method functionality --
 // CHECKS -- buffer contains alias OR unalias, check if buffer ONLY contains alias, check if alias
@@ -25,44 +26,6 @@ void printPrompt() {
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));
 }
 
-int redirection(char* myargs[]){
-   int i = 0;
-  //char* carrot = malloc(sizeof(char));
-   while(myargs[i] != NULL){
-        if(strchr(myargs[i], '>')){
-            if(strlen(myargs[i]) != 1){
-               // myargs[i] = strrchr(myargs[i], '>');
-                strtok(myargs[i], ">");
-            }
-            myargs[i] = '\0';
-            break;
-        }
-        i++;
-    }
-
-    char *fn = myargs[i + 1];
-    //write(1, fn, strlen(fn));
-   // char *writeTo = myargs[i - 1];
-    FILE *fd = fopen(fn, "wb+");
-    if(myargs[i + 2] != NULL){
-        write(STDERR_FILENO, "Redirection misformatted.\n", 26);
-        return 1;
-    }
-    if(fd == NULL){
-        perror("Error in redirecting and opening file: ");
-        return 1;
-    }
-    
-    //write(1, fn, strlen(fn));
-    dup2(fileno(fd), STDOUT_FILENO);
-    fclose(fd);
-    // fork();
-    // execv(myargs[0], myargs);
-    //write(fd, writeTo, strlen(writeTo));
-    //fopen(fn, "w+");
-    return 0;
-}
-
 int checkWhiteSpace(char* buffer){
     int whitespace = 0;
     for(int i = 0; i < strlen(buffer); i++){
@@ -74,17 +37,60 @@ int checkWhiteSpace(char* buffer){
     return whitespace;
 }  
 
-void newProcess(char *myargs[]) {
+char *jump(char *str){
+    while(isspace(*str)){
+        str++;
+    }
+    return str;
+}
+
+
+int redirection(char* copy){
+    char *filename = NULL;
+    char *token = NULL;
+    token = strtok(copy, ">");
+    filename = strtok(NULL, ">\n");
+
+    if(filename == NULL || token == NULL || strchr(jump(filename), ' ')){
+        write(STDERR_FILENO, "Redirection misformatted.\n", 26);
+        return 1;
+    }
+    
+    int count = 1;
+    char *myargs[256];
+
+    char *cmd = strtok(token, " ");
+    myargs[0] = cmd;
+    token = strtok(NULL, " ");
+    while (token != NULL) {
+        myargs[count] = token;
+        count++;
+        token = strtok(NULL, " ");
+    }
+    myargs[count] = NULL;
+   
+    FILE *fd = fopen(jump(filename), "w");
+
+    if(dup2(fileno(fd), 1) == -1){
+         fprintf(stderr, "Error: %s\n", strerror(errno));
+    }
+    execv(cmd, myargs);
+    fclose(fd);
+
+    return 0;
+}
+
+
+void newProcess(char *myargs[], char *copy) {
     int rc = fork();
     int status;
     if (rc < 0) { 
         exit(1);
-    }
-    else if (rc == 0) {
+    } else if (rc == 0) {
         int i = 0;
         while(myargs[i] != NULL){
             if(strchr(myargs[i], '>')){
-                if(redirection(myargs) == 1){
+                if(redirection(copy)){
                     _exit(0);
                 }
                 break;
@@ -250,7 +256,7 @@ int checkAlias(char* myargs[]) {
                 j++;
             }
             newArgs[i] = NULL;
-            newProcess(newArgs); 
+            newProcess(newArgs, NULL); 
             return 1;  
         }
         current = current->nextAlias;
@@ -282,6 +288,8 @@ void processCommand(char* buffer) {
 
     // TODO: Redirection code
 
+   // write(1, copy, strlen(copy));
+    char *copy = strdup(buffer);
     token = strtok(buffer, delim);
     int count = 0;
     
@@ -306,7 +314,7 @@ void processCommand(char* buffer) {
         exitShell();
     }
     else {
-        newProcess(myargs);
+        newProcess(myargs, copy);
     }  
 }
 
