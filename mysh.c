@@ -75,7 +75,7 @@ void newProcess(char *myargs[], char *copy) {
     int rc = fork();
     int status;
     if (rc < 0) { 
-        exit(1);
+        _exit(1);
     } else if (rc == 0) {
         int i = 0;
         while(myargs[i] != NULL){
@@ -268,7 +268,7 @@ void exitShell() {
        free(tmp);
     }
     _exit(0);
-\}
+}
 
 void processCommand(char* buffer) {
     char *myargs[256];
