@@ -13,15 +13,11 @@
 // 3. print method for printing all keys (cmd alias)
 //* special case * alias redirection
 
-// TO-DOs
-// 2. linked list for alias method (struct)
-// 3. redirection method
-// 4. unalias
 
 struct alias {
-    struct alias *nextAlias;
     char *aliasName;
     char *argv[256];
+    struct alias *nextAlias;
     
 };
 
@@ -38,25 +34,16 @@ void printPrompt() {
     write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));
 }
 
-int checkWhiteSpace(char *buffer) {
-    int whitespace = 0;
-    for (int i = 0; i < strlen(buffer); i++) {
-        if (isspace(buffer[i]) == 0) {
-            whitespace = 1;
-            break;
-        }
-    }
-    return whitespace;
-}
-
 void newProcess(char *myargs[]) {
     int rc = fork();
     int status;
-    if (rc < 0) { // Fork Error
+    if (rc < 0) { 
         exit(1);
     }
     else if (rc == 0) {
-        execv(myargs[0], myargs);;
+        // TODO: handle redirection
+        execv(myargs[0], myargs);
+        // TODO: handle if execv fails print error message
         _exit(0);
     }
     else {
@@ -64,16 +51,69 @@ void newProcess(char *myargs[]) {
     }
 }
 
+struct alias *head = NULL;
+
+void printAlias() {
+    struct alias *current = malloc(sizeof(struct alias));
+    current = head;
+    while (current != NULL) {
+        write(1, current->aliasName, strlen(current->aliasName));
+        write(1, " ", 1);
+        int i = 0;
+        while(current->argv[i] != NULL) {
+            write(1, current->argv[i], strlen(current->argv[i]));
+            if(current->argv[i + 1] != NULL) {
+                write(1, " ", 1);
+            }
+            i++;
+        }
+        current = current->nextAlias;
+    }
+    free(current);
+}
+
 void alias(char *myargs[], int argc) {
+    struct alias *current = malloc(sizeof(struct alias));
+    current = head;
+
     if (argc == 1) {
-        printf("It's just alias\n");
+        // print aliases
+        while (current != NULL) {
+            printAlias();
+            current = current->nextAlias;
+        }
     }
     else if (argc == 2) {
-        printf("Check if alias exists and print it out of it does\n");
+        // check if alias exists and print it if it does
+        while (current != NULL) {
+            if(myargs[1] == current->aliasName) {
+                printAlias();
+                return;
+            }
+            current = current->nextAlias;
+        }
     }
     else {
+        // go through aliases, check if it exists and override if it does
+        // add to the end if doesn't
         printf("Deal with adding the alias\n");
+        if (head == NULL) {
+            head = malloc(sizeof(struct alias));
+            head->aliasName = strdup(myargs[1]);
+            //char *aliasArgs[256];
+            int i = 2;
+            while(myargs[i] != NULL) {
+                head->argv[i-2] = strdup(myargs[i]);
+                i++;
+            }
+            head->argv[i-2] = NULL;
+            //head->argv = aliasArgs;
+            head->nextAlias = NULL;
+        }
+
     }
+
+    free(current);
 }
 
 void unalias(char* myargs[], int argc) {
@@ -87,10 +127,17 @@ void unalias(char* myargs[], int argc) {
     }
 }
 
+void exitShell() {
+    printf("User typed exit");
+    // TODO: clean up all the memory
+}
+
 void processCommand(char* buffer) {
     char *myargs[256];
     char *token;
     const char delim[] = " \n\t\v\t\r";
+
+    // TODO: Redirection code
 
     token = strtok(buffer, delim);
     int count = 0;
@@ -102,34 +149,24 @@ void processCommand(char* buffer) {
     }
     myargs[count] = NULL;
 
+    // check if alias exists
+    // if alias exists, run command there
+    // if (checkAlias(myArgs) == 1) {
+    //     return;
+    // }
+
     if (strcmp(myargs[0], "alias") == 0) {
-        //printf("alias mode\n");
         alias(myargs, count);
     }
     else if (strcmp(myargs[0], "unalias") == 0) {
-        //printf("unalias mode\n");
         unalias(myargs, count);
     }
-    else {
-        // check if arg[0] belongs to the linked list
-        // if (head != NULL) {
-        //     struct node *current = malloc(sizeof(struct node));
-        //     current = head;
-        //     printf("%s Hello\n", head->key);
-        //     while (current != NULL) {
-        //         printf("Hello\n");
-        //         if (strstr(myargs[0], current->key) != NULL) {
-        //             myargs[0] = current->data;
-        //             // myargs[1] = 0;
-        //             printf("MYARGS0: %s MYARGS1: %s\n", myargs[0], myargs[1]);
-        //             break;
-        //         }
-        //         current = current->next;
-        //     }
-        // }
-        newProcess(myargs);
+    else if (strcmp(myargs[0], "exit") == 0) {
+        exitShell();
     }
-    
+    else {
+        newProcess(myargs);
+    }  
 }
 
 void interactive(int argc, char *argv[]) {
@@ -143,7 +180,6 @@ void interactive(int argc, char *argv[]) {
         processCommand(buffer);
         printPrompt();
     }
-
 }
 
 int main(int argc, char *argv[]) {
