@@ -89,8 +89,6 @@ void alias(char *myargs[], int argc) {
     }
     else {
         // go through aliases, check if it exists and override if it does
-        // add to the end if doesn't
-        // printf("Deal with adding the alias\n");
         if (head == NULL) {
             head = malloc(sizeof(struct alias));
             head->aliasName = strdup(myargs[1]);
@@ -141,7 +139,35 @@ void unalias(char* myargs[], int argc) {
         write(1, unaliasError, strlen(unaliasError));
     }
     else {
-        printf("check if alias exists and delete if it does\n");
+        struct alias *current = head;
+        struct alias *prev = NULL;
+        
+        while (current != NULL) {
+            if(strcmp(current->aliasName, myargs[1]) == 0) {
+                if (prev == NULL && current->nextAlias == NULL) {
+                    free(current);
+                    head = NULL;
+                    return; 
+                }
+                else if(prev == NULL) {
+                    head = head->nextAlias;
+                    free(current);
+                    return; 
+                }
+                else if(current->nextAlias == NULL) {
+                    prev->nextAlias = NULL;
+                    free(current);
+                    return;
+                }
+                else {
+                    prev->nextAlias = current->nextAlias;
+                    free(current);
+                    return;
+                }
+            }
+            prev = current;
+            current = current->nextAlias;
+        }
     }
 }
 
