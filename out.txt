@@ -1,0 +1,5 @@
+alias ls /bin/ls -l
+/bin/echo hello world
+hello world
+alias ls /bin/ls -lDeal with adding the alias
+Deal with adding the alias
