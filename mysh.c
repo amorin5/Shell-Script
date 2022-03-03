@@ -4,7 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/wait.h>
-#include<fcntl.h>
+#include <fcntl.h>
 #include <errno.h>
 
 struct alias {
@@ -67,7 +67,6 @@ int redirection(char* copy){
     }
     execv(cmd, myargs);
     fclose(fd);
-    //free(copy);
     return 0;
 }
 
