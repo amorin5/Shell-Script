@@ -62,7 +62,7 @@ int redirection(char* myargs[]){
     char *writeTo = myargs[i - 1];
     int fd = open(fn, O_WRONLY, 0666);
     //write(1, fn, strlen(fn));
-    dup2(fd, 1);
+    dup2(fd, STDOUT_FILENO);
     write(fd, writeTo, strlen(writeTo));
     //fopen(fn, "w+");
     return 0;
