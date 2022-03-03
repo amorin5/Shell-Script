@@ -1,3 +1,0 @@
-/bin/echo hello
-/bin/cat test.txt
-/bin/echo test

@@ -3,125 +3,351 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include<sys/wait.h>
-//#include "linkedList.c"
-b
-//TO-DOs
-//1. string concatenation to write function
-//2. linked list for alias method (struct)
-//3. redirection method
-//4. unalias
-//5. write the errors
+#include <sys/wait.h>
+#include<fcntl.h>
 
-void printPrompt(){
-    write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));                
+// alias method functionality --
+// CHECKS -- buffer contains alias OR unalias, check if buffer ONLY contains alias, check if alias
+// already exists, check if key == unalias, alias, or exit
+// 1. add nodes to the linked list for multiple aliases, override for keys
+// 2. remove nodes for unaliasing
+// 3. print method for printing all keys (cmd alias)
+//* special case * alias redirection
+
+
+struct alias {
+    char *aliasName;
+    char *argv[256];
+    struct alias *nextAlias;
+};
+
+void printPrompt() {
+    write(STDOUT_FILENO, "mysh> ", strlen("mysh> "));
 }
 
+int redirection(char* myargs[]){
+   int i = 0;
+  //char* carrot = malloc(sizeof(char));
+   while(myargs[i] != NULL){
+        if(strchr(myargs[i], '>')){
+            if(strlen(myargs[i]) != 1){
+               // myargs[i] = strrchr(myargs[i], '>');
+                strtok(myargs[i], ">");
+            }
+            myargs[i] = '\0';
+            break;
+        }
+        i++;
+    }
 
-int newProcess(char *myargs[]){
-    //write(1, myargs[0], strlen(myargs[0]));
-    //write(1, myargs[1], strlen(myargs[1]));
-    int rc = fork();
-    if (rc < 0) {   //Fork Error
-        exit(1);
-    } else if(rc == 0){
-        execv(myargs[0], myargs);
+    char *fn = myargs[i + 1];
+    //write(1, fn, strlen(fn));
+   // char *writeTo = myargs[i - 1];
+    FILE *fd = fopen(fn, "wb+");
+    if(myargs[i + 2] != NULL){
+        write(STDERR_FILENO, "Redirection misformatted.\n", 26);
+        return 1;
     }
-    else {
-       rc = wait(NULL);
+    if(fd == NULL){
+        perror("Error in redirecting and opening file: ");
+        return 1;
     }
+    
+    //write(1, fn, strlen(fn));
+    dup2(fileno(fd), STDOUT_FILENO);
+    fclose(fd);
+    // fork();
+    // execv(myargs[0], myargs);
+    //write(fd, writeTo, strlen(writeTo));
+    //fopen(fn, "w+");
     return 0;
 }
 
-int main(int argc, char *argv[]){
-    FILE *fp;
-    int flag = 0;
-    if(argc == 2){
-        fp = fopen(argv[1], "r");
-        flag = 1;
-       if(fp == NULL){
-           //char errorname[] = "Error: Cannot open file .\n";
-          // write(2, errorname, 20);
-       }
-    }else{
-        fp = stdin;
-        printPrompt();
+int checkWhiteSpace(char* buffer){
+    int whitespace = 0;
+    for(int i = 0; i < strlen(buffer); i++){
+        if(isspace(buffer[i]) == 0){
+            whitespace = 1;
+            break;
+        }
+    }        
+    return whitespace;
+}  
+
+void newProcess(char *myargs[]) {
+    int rc = fork();
+    int status;
+    if (rc < 0) { 
+        exit(1);
     }
-    char buffer[512];
-    char *myargs[sizeof(buffer)];
+    else if (rc == 0) {
+        int i = 0;
+        while(myargs[i] != NULL){
+            if(strchr(myargs[i], '>')){
+                if(redirection(myargs) == 1){
+                    _exit(0);
+                }
+                break;
+            }
+            i++;
+        }
+        execv(myargs[0], myargs);
+        char* error = myargs[0];
+        strcat(error, ": Command not found.\n");
+        write(STDERR_FILENO, error, strlen(error));
+        _exit(0);
+    }
+    else {
+        waitpid(rc, &status, 0);
+    }
+}
+
+struct alias *head = NULL;
+
+void printAlias(struct alias *current) {
+    write(1, current->aliasName, strlen(current->aliasName));
+    write(1, " ", 1);
+    int i = 0;
+    while(current->argv[i] != NULL) {
+        write(1, current->argv[i], strlen(current->argv[i]));
+        if(current->argv[i + 1] != NULL) {
+            write(1, " ", 1);
+        }
+        i++;
+    }
+    write(1, "\n", 1);
+}
+
+void alias(char *myargs[], int argc) {
+    if (argc == 1) {
+        // print aliases
+        struct alias *current = head;
+        while (current != NULL) {
+            printAlias(current);
+            current = current->nextAlias;
+        }
+    }
+    else if (argc == 2) {
+        // check if alias exists and print it if it does
+        struct alias *current = head;
+        while (current != NULL) {
+            if(strcmp(myargs[1], current->aliasName) == 0) {
+                printAlias(current);
+                return;
+            }
+            current = current->nextAlias;
+        }
+    }
+    else {
+        // go through aliases, check if it exists and override if it does
+        if (head == NULL) {
+            head = malloc(sizeof(struct alias));
+            head->aliasName = strdup(myargs[1]);
+            int i = 2;
+            while(myargs[i] != NULL) {
+                head->argv[i-2] = strdup(myargs[i]);
+                i++;
+            }
+            head->argv[i-2] = NULL;
+            head->nextAlias = NULL;
+        }
+        else {
+            struct alias *current = head;
+            while (current != NULL) {
+                if(strcmp(current->aliasName, myargs[1]) == 0) {
+                    int i = 2;
+                    while(myargs[i] != NULL) {
+                        head->argv[i-2] = strdup(myargs[i]);
+                        i++;
+                    }
+                    head->argv[i-2] = NULL;
+                    return;
+                }
+                if (current->nextAlias == NULL) {
+                    break;
+                }
+                current = current->nextAlias;
+            }
+            struct alias* newAlias = malloc(sizeof(struct alias));
+            newAlias->aliasName = strdup(myargs[1]);
+            int i = 2;
+            while(myargs[i] != NULL) {
+                newAlias->argv[i-2] = strdup(myargs[i]);
+                i++;
+            }
+            newAlias->argv[i-2] = NULL;
+            newAlias->nextAlias = NULL;
+            current->nextAlias = newAlias;
+        }
+    }
+}
+
+void unalias(char* myargs[], int argc) {
+    char unaliasError[] = "unalias: Incorrect number of arguments.\n";
+
+    if (argc <= 1 || argc > 2) {
+        write(1, unaliasError, strlen(unaliasError));
+    }
+    else {
+        struct alias *current = head;
+        struct alias *prev = NULL;
+        
+        while (current != NULL) {
+            if(strcmp(current->aliasName, myargs[1]) == 0) {
+                if (prev == NULL && current->nextAlias == NULL) {
+                    free(current);
+                    head = NULL;
+                    return; 
+                }
+                else if(prev == NULL) {
+                    head = head->nextAlias;
+                    free(current);
+                    return; 
+                }
+                else if(current->nextAlias == NULL) {
+                    prev->nextAlias = NULL;
+                    free(current);
+                    return;
+                }
+                else {
+                    prev->nextAlias = current->nextAlias;
+                    free(current);
+                    return;
+                }
+            }
+            prev = current;
+            current = current->nextAlias;
+        }
+    }
+}
+
+int checkAlias(char* myargs[]) {
+    struct alias* current = head;
+    
+    while (current != NULL) {
+        if (strcmp(current->aliasName, myargs[0]) == 0) {
+            char* newArgs[256];
+            int i = 0;
+            while (current->argv[i] != NULL) {
+                newArgs[i] = current->argv[i];
+                i++;
+            }
+            int j = 1;
+            while (myargs[j] != NULL) {
+                newArgs[i] = myargs[j];
+                i++;
+                j++;
+            }
+            newArgs[i] = NULL;
+            newProcess(newArgs); 
+            return 1;  
+        }
+        current = current->nextAlias;
+    }
+    return 0;
+}
+void exitShell() {
+    // struct alias* current = head;
+    // struct alias* prev = NULL;
+
+    // while(current != NULL) {
+    //     if (current->nextAlias == NULL && prev == NULL) {
+    //         free(current);
+    //         head = NULL;
+    //         exit(0);
+    //     }
+    //     else {
+    //         free(prev); 
+    //     }
+    //     current = current->nextAlias;
+    // }
+    //printf("User typed exit");
+    exit(0);
+    // TODO: clean up all the memory
+}
+
+void processCommand(char* buffer) {
+    char *myargs[256];
     char *token;
-    while(fgets(buffer, 512, fp)){
-        if(flag == 1){
-            write(1, buffer, strlen(buffer));
-        }
-        //seperating the line into the args -- redirection
-        if(strchr(buffer, '>')){
-            token = strtok(buffer, " >");
-            myargs[0] = token;
-            int i = 1;
-            while(token != NULL){
-                token = strtok(NULL, " \n");
-                myargs[i] = token;
-                i++;
-            }
-            //redirection method -- better to do here or easier to do in new call?
-        } else if(strstr(buffer, "alias") != NULL){
-            //struct node *linkedList = (struct node*) malloc(sizeof(struct node));
+    const char delim[] = " \n\t\v\t\r";
 
-            //deliminate based on alias -- only 3 args so only the first 2 whitespaces
-            //alias method
-            //check if second argument is alias, unalias, or exit -- error
-            //check if arg[0] is unalias or alias, then determine if add/subtract from LL
-        } else {
-            // MODIFIES MYARGS
-            //check if arg[0] is in the linked list of alias
+    // TODO: Redirection code
 
-            //base case -- break the line into array of arguments
-            token = strtok(buffer, " \n");
-            myargs[0] = token;
-            int i = 1;
-            while(token != NULL){
-                token = strtok(NULL, " \n");
-                myargs[i] = token;
-                i++;
-            }
-            
-        }
-       
+    token = strtok(buffer, delim);
+    int count = 0;
+    
+    while (token != NULL) {
+        myargs[count] = token;
+        count++;
+        token = strtok(NULL, delim);
+    }
+    myargs[count] = NULL;
+
+    if (checkAlias(myargs) == 1) {
+        return;
+    }
+
+    if (strcmp(myargs[0], "alias") == 0) {
+        alias(myargs, count);
+    }
+    else if (strcmp(myargs[0], "unalias") == 0) {
+        unalias(myargs, count);
+    }
+    else if (strcmp(myargs[0], "exit") == 0) {
+        exitShell();
+    }
+    else {
         newProcess(myargs);
-        if(argc == 1){
+    }  
+}
+
+void interactive(int argc, char *argv[]) {
+    FILE *fp;
+    fp = stdin;
+    char buffer[512];
+
+    printPrompt();
+
+    while (fgets(buffer, 512, fp) != NULL) {
+        if (checkWhiteSpace(buffer) == 0) {
             printPrompt();
             continue;
         }
+        processCommand(buffer);
+        printPrompt();
     }
-    return(0);
+}
+
+int main(int argc, char *argv[]) {
+    FILE *fp;
+    char buffer[512];
+    //int flag = 0;
+
+    if (argc < 1 || argc > 2) {
+        write(STDERR_FILENO, "Usage: mysh [batch-file]\n", 25);
+        return 1;
     }
+    else if (argc == 1) {
+        interactive(argc, argv);
+    }
+    else {
+        fp = fopen(argv[1], "r");
+        if (fp == NULL) {
+            char str[] = "Error: Cannot open file ";
+            strcat(str, argv[1]);
+            strcat(str, ".\n");
+            write(STDERR_FILENO, str, strlen(str));
+            return 1;
+        }
 
-    //Batch mode - arg[1] is the name of a file
-    //1. check if file is valid, output error if not
-    //2. open file, read line to stdout
-    //3. complete command listed in file
-    //4. repeat, put into loop
-
-    //Interactive mode - output a prompt for user to type commands to
-    //question: which commands do we need to include?
-    //ls in tests,
-
-    //redirection - output goes into a file rather than stdout
-    //if exists, overwrite, else create a new file
-
-    //aliasing = shortcuts
-    //
-
-
-    // int whitespace = 0;
-    // for(int i = 0; i < strlen(buffer); i++){
-    //     if(isspace(buffer[0] == 0)){
-    //         whitespace = 1;
-    //         break;
-    //     }
-    // }
-    // if(whitespace == 0){
-    //     continue;
-    // }
-
+        while (fgets(buffer, 512, fp) != NULL) {
+            write(1, buffer, strlen(buffer));
+            if (checkWhiteSpace(buffer) == 0) {
+                continue;
+            }
+            processCommand(buffer);
+        }
+        fclose(fp);
+    }
+    return 0;
+}
